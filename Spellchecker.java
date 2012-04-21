@@ -17,13 +17,25 @@ import java.util.*;
  *    vowel combinations are attempted. For example, in the input "tost", "test",
  *    "tast", "tist", "tust" are all attempted words. While "toast" tries "toest",
  *    "toust", "teost", "teust", etc...
- * 3. Reeeepeeeated Letttters. Any repeated letters are removed and the word is checked
- *    again.
+ * 3. Reeeepeeeated Letttters. Any repeated letters are removed and the word is
+ *    checked again.
  *    
  * Any combination of these rules is acceptable. Capitalizations can occur on the same
  * section of the string as repeated letters or incorrect vowels. Unfortunately, the second
  * of a repeated vowel which is then misplaced is invalid and a substitution would not be 
  * found, so "weall" will not match "well", but "waell" will match "well".
+ * 
+ * One idea for optimization would be to offload the spellchecking functionality by making
+ * the Trie more specialized and robust. The start overhead would be greater, but the individual
+ * running time would be much easier.
+ * 
+ * For example, when a vowel is added to the dictionary, all the other vowels could be added at
+ * the same level as sibling nodes. And instead of a simple boolean to check if it's a valid word
+ * or not, the real suggested word could be held in the final node.
+ * 
+ * That way, only repeated letters and improper capitalization would be checked while still
+ * meeting the above 3 rules.
+ * 
  * 
  * @author Dan Moore
  * @version 1.0
