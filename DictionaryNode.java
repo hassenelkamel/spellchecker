@@ -2,18 +2,23 @@ import java.util.LinkedList;
 
 /**
  * A Simple Trie Node
+ * Modified 
+ * 
  * @author Dan Moore
  * @version 1.0
  *
  */
-public class Node {
+public class DictionaryNode {
 	public char data; //The character on this node
-	public LinkedList<Node> children; //The list of children Nodes
-	public boolean word; //Used to mark the end of a word
+	public LinkedList<DictionaryNode> children; //The list of children Nodes
+	/*
+	 * Used to mark the end of the word. Also used to mark the real spelling of the word
+	 */
+	public String word;
 	
-	public Node(char data) {
+	public DictionaryNode(char data) {
 		this.data = data;
-		this.children = new LinkedList<Node>();
+		this.children = new LinkedList<DictionaryNode>();
 	}
 	
 	/**
@@ -21,10 +26,10 @@ public class Node {
 	 * @param data the char to match
 	 * @return the child Node or null if none found
 	 */
-	public Node findChildNode(char data) {
+	public DictionaryNode findChildNode(char data) {
 		if(this.children != null) {
 			for(int i = 0; i < this.children.size(); i++) {
-				Node child = this.children.get(i);
+				DictionaryNode child = this.children.get(i);
 				if(child.data == data) {
 					return child;
 				}
@@ -45,12 +50,15 @@ public class Node {
 				char child = this.children.get(i).data;
 				toReturn += " "+child;
 			}
+			if(this.word != null) toReturn += " and gives word: "+this.word;
 			toReturn += "\n";
 			for(int i = 0; i < this.children.size(); i++) {
 				toReturn += this.children.get(i).toString();
 			}
 		} else {
-			toReturn = "Node "+this.data+" has no children.\n";
+			toReturn = "Node "+this.data+" has no children.";
+			if(this.word != null) toReturn += " and gives word: "+this.word;
+			toReturn += "\n";
 		}
 		return toReturn;
 	}

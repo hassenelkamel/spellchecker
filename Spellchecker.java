@@ -25,18 +25,6 @@ import java.util.*;
  * of a repeated vowel which is then misplaced is invalid and a substitution would not be 
  * found, so "weall" will not match "well", but "waell" will match "well".
  * 
- * One idea for optimization would be to offload the spellchecking functionality by making
- * the Trie more specialized and robust. The start overhead would be greater, but the individual
- * running time would be much easier.
- * 
- * For example, when a vowel is added to the dictionary, all the other vowels could be added at
- * the same level as sibling nodes. And instead of a simple boolean to check if it's a valid word
- * or not, the real suggested word could be held in the final node.
- * 
- * That way, only repeated letters and improper capitalization would be checked while still
- * meeting the above 3 rules.
- * 
- * 
  * @author Dan Moore
  * @version 1.0
  */
@@ -54,8 +42,9 @@ public class Spellchecker {
 	 * @param args No CLI arguments are available at this time.
 	 */
 	public static void main(String[] args) {
-		String word;
+		String word, found;
 		
+		//trieTesting();
 		//manually mark vowels. What about Y?!
 		vowels = new ArrayList<String>();
 		vowels.add("a");
@@ -64,20 +53,22 @@ public class Spellchecker {
 		vowels.add("e");
 		vowels.add("u");
 		
-		//buildDictionary("/home/user/workspace/spellchecker/src/words.txt");
-		buildDictionary("");
+		buildDictionary("/home/user/workspace/spellchecker/src/words.txt");
+		//buildDictionary("");
 		
 		while(true) { //loop indefinitely
 			word = getWord();
-			if(trie.find(word)) {
-				System.out.println(word); //A valid word was entered
+			//System.out.println("Trying word: "+word);
+			found = trie.find(word);
+			if(found != null) {
+				System.out.println(found); //A valid word was entered, or a simple vowel mistake was found
 			} else {
 				word = word.toLowerCase(); //correct uppercase "spelling" mistakes
-				if(trie.find(word)) {
+				//System.out.println("Trying word: "+word);
+				if(trie.find(word) != null) {
 					System.out.println(word); //word just had case problems
 				} else {
-					//System.out.print("- "+word+"   -   ");
-					if((word = checkRepeatsAndVowels(word, 0)) != null) { //recursively check all repeats and vowels
+					if((word = checkRepeats(word, 0)) != null) { //recursively check all repeats
 						System.out.println(word);
 					} else {
 						System.out.println("NO SUGGESTION");
@@ -85,6 +76,7 @@ public class Spellchecker {
 				}
 			}
 		}
+		
 	}
 	
 	/**
@@ -103,71 +95,26 @@ public class Spellchecker {
 	 * @param place The place in the word to start recursively checking, this increases with each layer
 	 * @return the word suggested or null for NO SUGGESTION
 	 */
-	public static String checkRepeatsAndVowels(String word, int place) {
-		String testWord; //, doubleTestWord;
-		for(int i = place; i < word.length(); i++) {
-			//Check Vowels First
-			String checking = String.valueOf(word.charAt(i));
-			if(vowels.contains(checking)) { //if this letter is a vowel
-				for(int j = 0; j < vowels.size(); j++) {
-					if(!vowels.get(j).equals(checking)) { //ignore the vowel it originally was
-						testWord = replaceLetter(word, i, vowels.get(j)); //try a new vowel
-						if(trie.find(testWord)) {
-							return testWord; //that worked! the replacement word was found in the dictionary
-						} else {
-							//This is a test to see if we can go back without infinite looping
-							//if((doubleTestWord = doubleCheckRepeats(testWord, i)) != null) {
-							//	return doubleTestWord;
-							//}
-							testWord = checkRepeatsAndVowels(testWord, i+1); //check other vowels and repeats further down
-							if((testWord != null) && trie.find(testWord)) {
-								return testWord; //something down the chain worked! a replacement word was found in the dictionary
-							}
-						}
-					}
+	public static String checkRepeats(String word, int place) {
+		String testWord, found;
+		//System.out.println("Trying: "+word);
+		if (place != word.length()-1) { //not the last character
+			if(word.charAt(place) == word.charAt(place+1)) {
+				testWord = replaceLetter(word, place, "");
+				if((found = trie.find(testWord)) != null) {
+					return found;
+				} else if ((found = checkRepeats(testWord, place)) != null) {
+					return found;
+				} else {
+					return found = checkRepeats(word, place+1);
 				}
+			} else {
+				return checkRepeats(word, place+1);
 			}
-			
-			//Check for repeats
-			if(i != word.length()-1) { //if this isn't the last character
-				if(word.charAt(i) == word.charAt(i+1)) {//see if there's a repeated character after it
-					testWord = replaceLetter(word, i, ""); //if there is, remove it, check the word again
-					if(trie.find(testWord)) {
-						return testWord; //if the word is valid, return it up the chain (each time will check the returns)
-					} else { //if the word is not valid, recurse and do again
-						testWord = checkRepeatsAndVowels(testWord, i);
-						if((testWord != null) && trie.find(testWord)) {
-							return testWord; //if the recursed word is valid, return it
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * In the extreme corner case that a vowel is duplicated, and the 2nd of the two vowels is the one changed,
-	 * checkRepeatsAndVowels does not catch this. Therefore this function was written to go back a place in the string
-	 * to make sure that the immediate change does not create a prior repeat
-	 * 
-	 * @param word
-	 * @param place 
-	 * @return
-	 */
-	public static String doubleCheckRepeats(String word, int place) {
-		if(word.length() > 1 && place > 0 && place < word.length() && word.charAt(place) == word.charAt(place-1)) { //being really careful, check the previous position to see if it's a repeated character
-			word = replaceLetter(word, place, "");
-			if(trie.find(word)) {
-				return word;
-			}
-			return null; //you would call the check repeat and vowels here, but that causes an infinite loop in some cases as well, checking forwards then backwards
 		} else {
 			return null;
 		}
 	}
-	
-	
 	
 	/**
 	 * This is a small helper function to replacing letters in a word.
@@ -206,12 +153,12 @@ public class Spellchecker {
 	 * A simple Trie run to test a few words
 	 */
 	public static void trieTesting() {
-		buildDictionary("/home/user/workspace/spellchecker/src/com/toobulkeh/spellchecker/words.txt");
+		buildDictionary("/home/user/workspace/spellchecker/src/words.txt");
 		printTrie();
-		lookFor("a");
-		lookFor("an");
-		lookFor("and");
-		lookFor("sheeple");
+		//lookFor("a");
+		//lookFor("an");
+		//lookFor("and");
+		//lookFor("sheeple");
 	}
 	
 	/**
@@ -221,8 +168,9 @@ public class Spellchecker {
 	 * 
 	 */
 	public static void lookFor(String word) {
-		if(trie.find(word)) {
-			System.out.println("Found word: "+word);
+		String found = trie.find(word);
+		if(found != null) {
+			System.out.println("Found word: "+word+". Suggestion: "+found);
 		} else {
 			System.out.println("Did not find word: "+word);
 		}
@@ -237,9 +185,10 @@ public class Spellchecker {
 			BufferedReader br = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(fileName))));
 			String line;
 			while ((line = br.readLine()) != null) {
-				trie.insert(line.toLowerCase()); //read in all lines of the file as lower case, Trie will throw out blank lines
-				//System.out.println("Added to dictionary: "+line);
+				trie.insert(null, line.toLowerCase(), 0, null); //read in all lines of the file as lower case, Trie will throw out blank lines
+				System.out.println("Added to dictionary: "+line);
 			}
+			printTrie();
 		} catch (FileNotFoundException e) { //File not found, rebuild dictionary with default dictionary file
 			System.err.println("File not found: "+fileName);
 			System.err.println("Using standard system dictionary: /usr/share/dict/words");

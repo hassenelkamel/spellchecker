@@ -17,13 +17,13 @@ public class Badspeller {
 	public static void main(String[] args) {
 		vowels = new ArrayList<String>();
 		vowels.add("a");
+		vowels.add("e");
 		vowels.add("o");
 		vowels.add("i");
-		vowels.add("e");
 		vowels.add("u");
 		
-		//generateWords("/home/user/workspace/spellchecker/src/words.txt");
-		generateWords("");
+		generateWords("/home/user/workspace/spellchecker/src/words.txt");
+		//generateWords("");
 	}
 	
 	public static void generateWords(String fileName) {
