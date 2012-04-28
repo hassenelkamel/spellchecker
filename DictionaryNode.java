@@ -5,20 +5,22 @@ import java.util.LinkedList;
  * Modified 
  * 
  * @author Dan Moore
- * @version 1.0
+ * @version 3.0
  *
  */
 public class DictionaryNode {
 	public char data; //The character on this node
 	public LinkedList<DictionaryNode> children; //The list of children Nodes
+	public DictionaryNode parent;
 	/*
 	 * Used to mark the end of the word. Also used to mark the real spelling of the word
 	 */
 	public String word;
 	
-	public DictionaryNode(char data) {
+	public DictionaryNode(char data, DictionaryNode parent) {
 		this.data = data;
 		this.children = new LinkedList<DictionaryNode>();
+		this.parent = parent;
 	}
 	
 	/**
@@ -59,6 +61,16 @@ public class DictionaryNode {
 			toReturn = "Node "+this.data+" has no children.";
 			if(this.word != null) toReturn += " and gives word: "+this.word;
 			toReturn += "\n";
+		}
+		return toReturn;
+	}
+	
+	public String parents() {
+		String toReturn = "";
+		DictionaryNode looking = this;
+		while(looking != null) {
+			toReturn = looking.data + " " + toReturn;
+			looking = looking.parent;
 		}
 		return toReturn;
 	}

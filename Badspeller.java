@@ -9,12 +9,18 @@ import java.util.Random;
 
 public class Badspeller {
 
-	public final static int MISTAKES = 4;
-	public final static int BADWORDS = 1;
+	public static int MISTAKES = 4;
+	public static int BADWORDS = 2;
 	public static Random gen = new Random(System.currentTimeMillis());
 	public static ArrayList<String> vowels;
 	
 	public static void main(String[] args) {
+		if(args.length >= 1) {
+			if(args.length == 2) {
+				MISTAKES = Integer.parseInt(args[1]);
+			}
+			BADWORDS = Integer.parseInt(args[0]);
+		}
 		vowels = new ArrayList<String>();
 		vowels.add("a");
 		vowels.add("e");
@@ -22,8 +28,8 @@ public class Badspeller {
 		vowels.add("i");
 		vowels.add("u");
 		
-		generateWords("/home/user/workspace/spellchecker/src/words.txt");
-		//generateWords("");
+		//generateWords("/home/user/workspace/spellchecker/src/words.txt");
+		generateWords("/usr/share/dict/words");
 	}
 	
 	public static void generateWords(String fileName) {
