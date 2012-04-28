@@ -30,23 +30,28 @@ public class Spellchecker {
 	private static final char PROMPT = '>'; 
 	private static Trie dict = new Trie();
 	private static Scanner input = new Scanner(System.in);
+	private static boolean DEBUG = false;
 	
 	/**
 	 * The command line program which prompts a user for words, read in using new lines
-	 * May read two words separate by spaces (Scanner .getNext)
-	 * 
-	 * @param args No CLI arguments are available at this time.
+	 * @param args[0] Debug Mode (true or false)
 	 */
 	public static void main(String[] args) {
+		if(args.length > 0) DEBUG = Boolean.parseBoolean(args[0]);
 		String word, found;
 		
-		buildDictionary("/usr/share/dict/words");
-		//buildDictionary("/home/user/workspace/spellchecker/src/words.txt");
-		
+		if(DEBUG) {
+			buildDictionary("/home/user/workspace/spellchecker/src/words.txt");
+			printDictionary();
+		} else {
+			buildDictionary("/usr/share/dict/words");
+		}
+	
 		try {
 			while(true) {
 				word = getWord().toLowerCase();
 				found = dict.find(word);
+				if(DEBUG) System.out.print("Trying: "+word+". Got: ");
 				if(found != null) {
 					System.out.println(found);
 				} else {
@@ -80,9 +85,10 @@ public class Spellchecker {
 				//System.out.println("Added to dictionary: "+line);
 			}
 		} catch (Exception e) { //File not found, rebuild dictionary with default dictionary file
+			System.err.println(e.getMessage());
 			//System.err.println("File not found: "+fileName);
 			//System.err.println("Using standard system dictionary: /usr/share/dict/words");
-			buildDictionary("/usr/share/dict/words");
+			//buildDictionary("/usr/share/dict/words");
 		}
 	}
 	

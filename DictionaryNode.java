@@ -1,7 +1,7 @@
 import java.util.LinkedList;
 
 /**
- * A Simple Trie Node
+ * A Custom Trie Node
  * Modified 
  * 
  * @author Dan Moore
@@ -9,13 +9,15 @@ import java.util.LinkedList;
  *
  */
 public class DictionaryNode {
-	public char data; //The character on this node
-	public LinkedList<DictionaryNode> children; //The list of children Nodes
-	public DictionaryNode parent;
-	/*
-	 * Used to mark the end of the word. Also used to mark the real spelling of the word
-	 */
-	public String word;
+	private char data; //The character on this node
+	private LinkedList<DictionaryNode> children; //The list of children Nodes
+	private DictionaryNode parent;
+	private String word;
+	
+	public DictionaryNode() {
+		this.children = new LinkedList<DictionaryNode>();
+		this.parent = null;
+	}
 	
 	public DictionaryNode(char data, DictionaryNode parent) {
 		this.data = data;
@@ -73,6 +75,26 @@ public class DictionaryNode {
 			looking = looking.parent;
 		}
 		return toReturn;
+	}
+	
+	public LinkedList<DictionaryNode> getChildren() {
+		return this.children;
+	}
+	
+	public char getData() {
+		return this.data;
+	}
+	
+	public String getWord() {
+		return this.word;
+	}
+	
+	public void setWord(String word) {
+		this.word = word;
+	}
+	
+	public void setData(char data) {
+		this.data = data;
 	}
 	
 }

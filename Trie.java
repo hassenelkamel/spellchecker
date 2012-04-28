@@ -1,5 +1,5 @@
 /**
- * Custom Dictionary Tree
+ * Custom Dictionary Trie
  * @author Dan Moore
  * @version 3.0
  *
@@ -9,9 +9,8 @@ public class Trie {
 	private DictionaryNode root;
 	
 	public Trie() {
-		root = new DictionaryNode(' ', null);
+		root = new DictionaryNode();
 	}
-	
 	
 	public void insert(String toAdd) {
 		insert(root, toAdd, 0);
@@ -30,13 +29,13 @@ public class Trie {
 	private static void insert(DictionaryNode loc, String toAdd, int letterPos) {
 		if(toAdd != null && toAdd.length() > 0) { //not a null or empty string
 			if(letterPos == toAdd.length()) { //last character, set word
-				loc.word = toAdd;
+				loc.setWord(toAdd);
 			} else {
 				DictionaryNode currNode = loc, found, newlyCreated;
 				char charToFind = toAdd.charAt(letterPos);
 				if((found = currNode.findChildNode(charToFind)) == null) { //if the child node based on this current char doesn't exist, create one
 					newlyCreated = new DictionaryNode(charToFind, currNode);
-					currNode.children.add(newlyCreated);
+					currNode.getChildren().add(newlyCreated);
 					insert(newlyCreated, toAdd, letterPos+1); //recursively continue creating trie
 				} else { //if the node already did exist
 					insert(found, toAdd, letterPos+1); //keep recursing
@@ -62,26 +61,44 @@ public class Trie {
 		}
 	}
 	
+	/**
+	 * Recursively ooks for the exact match in the trie
+	 * @param node
+	 * @param toFind
+	 * @param pos
+	 * @return
+	 */
 	private static String simpleFind(DictionaryNode node, String toFind, int pos) {
-		if((node.word != null) && (node.word.matches(toFind))) return node.word; //jump out as soon as we find a match
-		if(node.children == null) return null;
+		if((node.getWord() != null) && (node.getWord().matches(toFind))) return node.getWord(); //jump out as soon as we find a match
+		if(node.getChildren() == null) return null;
 		
 		for(int i = pos; i < toFind.length(); i++) {
-			for(int j = 0; j < node.children.size(); j++) {
-				if(node.children.get(j).data == toFind.charAt(i)) {
-					return simpleFind(node.children.get(j), toFind, pos+1);
+			for(int j = 0; j < node.getChildren().size(); j++) {
+				if(node.getChildren().get(j).getData() == toFind.charAt(i)) {
+					return simpleFind(node.getChildren().get(j), toFind, pos+1);
 				}
 			}
 		}
 		return null;
 	}
 	
+	/**
+	 * Recursively follows all possible paths given a RegEx statement
+	 * Valid RegEx includes:
+	 * 1. + for repeated characters 
+	 * 2. [aeiou] for vowels
+	 * 3. normal characters
+	 * @param node
+	 * @param toMatch
+	 * @param pos
+	 * @return
+	 */
 	private static String regexFind(DictionaryNode node, String toMatch, int pos) {
 		String found;
 		char tmpChar;
 		
-		if((node.word != null) && (node.word.matches(toMatch))) return node.word; //jump out as soon as we find a match
-		if(node.children == null) return null;
+		if((node.getWord() != null) && (node.getWord().matches(toMatch))) return node.getWord(); //jump out as soon as we find a match
+		if(node.getChildren() == null) return null;
 		for(int i = pos; i < toMatch.length(); i++) {
 			//System.out.print("Looking for: "+toMatch+". Looking at Position: "+i+". On Node: "+node.data+". Word stored: "+node.word+". Path is: "+node.parents()+". Children are:");
 			//for(int j = 0; j < node.children.size(); j++) {
@@ -89,24 +106,24 @@ public class Trie {
 			//}
 			//System.out.print("\n");
 			if(toMatch.charAt(i) == '[') { //a little trickery for vowels
-				for(int j = 0; j < node.children.size(); j++) {
-					tmpChar = node.children.get(j).data;
+				for(int j = 0; j < node.getChildren().size(); j++) {
+					tmpChar = node.getChildren().get(j).getData();
 					if(tmpChar == 'a' || tmpChar == 'e' || tmpChar == 'i' || tmpChar == 'o' || tmpChar == 'u') {
-						found = regexFind(node.children.get(j), toMatch, pos+7); //advance past the regex
+						found = regexFind(node.getChildren().get(j), toMatch, pos+7); //advance past the regex
 						if(found != null) return found;
 					}
 				}
 			} else if(toMatch.charAt(i) == '+') { //a little trickery for repeated characters
-				for(int j = 0; j < node.children.size(); j++) {
-					if(node.data == node.children.get(j).data) { //try repeated characters
-						found = regexFind(node.children.get(j), toMatch, pos);
+				for(int j = 0; j < node.getChildren().size(); j++) {
+					if(node.getData() == node.getChildren().get(j).getData()) { //try repeated characters
+						found = regexFind(node.getChildren().get(j), toMatch, pos);
 						if(found != null) return found;
 					}
 				}
 			} else { //just a normal character
-				for(int j = 0; j < node.children.size(); j++) {
-					if(node.children.get(j).data == toMatch.charAt(i)) {
-						found = regexFind(node.children.get(j), toMatch, pos+1);
+				for(int j = 0; j < node.getChildren().size(); j++) {
+					if(node.getChildren().get(j).getData() == toMatch.charAt(i)) {
+						found = regexFind(node.getChildren().get(j), toMatch, pos+1);
 						if(found != null) return found;
 					}
 				}
@@ -117,7 +134,7 @@ public class Trie {
 	
 	private static String toRegex(String word) {
 		boolean repeatFlag = false;
-		//turn repeated characters into plus signs
+		//turn repeated characters into ".+" where . is the character
 		for(int i = 0; i < word.length(); i++) {
 			if((i < word.length()-1) && (word.charAt(i) == word.charAt(i+1))) {
 				repeatFlag = true;
@@ -129,7 +146,7 @@ public class Trie {
 				i++;
 			}
 		}
-		//turn vowels into [aeiou]
+		//turn vowels into "[aeiou]"
 		for(int i = (word.length()-1); i >= 0; i--) {
 			if(isVowel(word.charAt(i))) {
 				word = replaceLetter(word, i, "[aeiou]");
@@ -154,7 +171,7 @@ public class Trie {
 	 * @param toAdd The character to put in that place, or an empty string to delete a character
 	 * @return the modified word
 	 */
-	private static String replaceLetter(String word, int place, String toAdd) {
+	public static String replaceLetter(String word, int place, String toAdd) {
 		if(word.length() == 1) {
 			if(place == 0) {
 				return toAdd; //if we're replacing the first letter of a 1 letter word, just return the new letter
@@ -181,10 +198,10 @@ public class Trie {
 	private static String traverseTrieCBN(DictionaryNode start) {
 		String toReturn = "";
 		if(start != null) {
-			for(int i = 0; i < start.children.size(); i++) {
-				toReturn += traverseTrieCBN(start.children.get(i));
+			for(int i = 0; i < start.getChildren().size(); i++) {
+				toReturn += traverseTrieCBN(start.getChildren().get(i));
 			}
-			if(start.word != null) toReturn += start.word+"\n";
+			if(start.getWord() != null) toReturn += start.getWord()+"\n";
 		}
 		return toReturn;
 	}
@@ -196,9 +213,9 @@ public class Trie {
 	private static String traverseTrieNBC(DictionaryNode start) {
 		String toReturn = "";
 		if(start != null) {
-			if(start.word != null) toReturn += start.word+"\n";
-			for(int i = 0; i < start.children.size(); i++) {
-				toReturn += traverseTrieCBN(start.children.get(i));
+			if(start.getWord() != null) toReturn += start.getWord()+"\n";
+			for(int i = 0; i < start.getChildren().size(); i++) {
+				toReturn += traverseTrieCBN(start.getChildren().get(i));
 			}
 		}
 		return toReturn;
